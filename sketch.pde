@@ -12,17 +12,20 @@ void setup()
   sy = height/cellSize;
   world = new int[sx][sy][2];
   for (int i = 0; i < 100; i++)
-    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(5)), cellSize);
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1,5)), cellSize);
 }
 void draw()
 {
-  background(255);
+  background(110, 230, 135);
   for (int i = 0; i < 100; i++)
   {
-    cell[i].x += int(random(-2, 2)) + sx;
-    cell[i].x %= sx;
-    cell[i].y += int(random(-2, 2)) + sy;
-    cell[i].y %= sy;
+    if(cell[i].type == 3)
+    {
+      cell[i].x += int(random(-2, 2)) + sx;
+      cell[i].x %= sx;
+      cell[i].y += int(random(-2, 2)) + sy;
+      cell[i].y %= sy;
+    }
     cell[i].draw();
   }
 }

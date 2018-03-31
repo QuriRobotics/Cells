@@ -12,20 +12,20 @@ class Cell
     switch(type)
     {
     case 1:
-    cellColor = color(255, 0, 0);
-    break;
+      cellColor = color(255, 0, 0);
+      break;
     case 2:
-    cellColor = color(120);
-    break;
+      cellColor = color(120);
+      break;
     case 3:
-    cellColor = color(0, 255, 253);
-    break;
+      cellColor = color(255, 255, 255);
+      break;
     case 4:
-    cellColor = color(0, 255, 0);
-    break;
+      cellColor = color(0, 255, 0);
+      break;
     }
   }
-  
+
   void draw()
   {
     fill(cellColor);
