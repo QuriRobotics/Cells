@@ -23,11 +23,11 @@ class Cell
     case 4:
       cellColor = color(0, 255, 0);
       break;
-    }
+   }
   }
 
   void draw()
-  {
+ {
     fill(cellColor);
     rect(x*cellSize, y*cellSize, cellSize, cellSize);
   }
