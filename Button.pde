@@ -11,15 +11,18 @@ class Button
     pressed = press;
     released = release;
   }
-  boolean overButt(int mousex, int mousey)
+  boolean overButt()
   {
-    if(mousex > x && mousex < x + xs &&
-        mousey > y && mousey < y + ys) return true;
+    if(mouseX > x && mouseX < x + xs &&
+        mouseY > y && mouseY < y + ys) 
+    {
+      return true;
+    } 
     else return false;
   }
   void draw()
   {
-    if(overButt(mouseX, mouseY))
+    if(overButt())
     {
       fill(pressed);
     }

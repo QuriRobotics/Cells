@@ -33,6 +33,9 @@ void draw()
     cell[i].draw();
   }
   reset.draw();
+  if(reset.overButt())
+    for (int i = 0; i < 100; i++)
+      cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1,5)), cellSize);
 }
 
 void mouseReleased()
