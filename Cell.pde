@@ -26,9 +26,9 @@ class Cell
    }
   }
 
-  void draw(float zoom)
+  void draw(float zoom, float bx, float by)
  {
     fill(cellColor);
-    rect(x*cellSize*zoom, y*cellSize*zoom, cellSize*zoom, cellSize*zoom);
+    rect(x*cellSize*zoom + bx, y*cellSize*zoom + by, cellSize*zoom, cellSize*zoom);
   }
 }

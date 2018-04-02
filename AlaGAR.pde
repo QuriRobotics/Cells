@@ -8,6 +8,8 @@ int canvasSizeX, canvasSizeY;
 int density = 15; // %
 int cellAmount;
 float zoom = 1;
+boolean locked = false;
+float biasX, biasY, difX = 0.0, difY = 0.0;
 
 void setup()
 {
@@ -34,7 +36,7 @@ void draw()
 {
   background(255);
   fill(110, 230, 135);
-  rect(0, 0, sx*cellSize, sy*cellSize);
+  rect(biasX, biasY, sx*cellSize*zoom, sy*cellSize*zoom);
   for (int i = 0; i < cellAmount; i++)
   {
     if(cell[i].type == 3)
@@ -44,7 +46,7 @@ void draw()
       cell[i].y += int(random(-2, 2)) + sy;
       cell[i].y %= sy;
     }
-    cell[i].draw(zoom);
+    cell[i].draw(zoom, biasX, biasY);
   }
   fill(255);
   rect(canvasSizeX, 0, width - canvasSizeX, height);
@@ -70,7 +72,26 @@ void mouseReleased()
   if(zoomReset.overButt())
   {
     zoom = 1;
+    biasX = 0;
+    biasY = 0;
   }
+  locked = false;
   mouseX = 0;
   mouseY = 0;
+}
+
+void mouseDragged()
+{
+  if(locked)
+  {
+    biasX = mouseX-difX;
+    biasY = mouseY-difY;
+  }
+}
+void mousePressed()
+{
+  if(mouseX > 0 && mouseX < canvasSizeX &&
+        mouseY > 0 && mouseY < canvasSizeY) locked = true;
+  difX = mouseX - biasX; 
+  difY = mouseY - biasY;
 }
