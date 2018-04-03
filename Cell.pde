@@ -23,12 +23,15 @@ class Cell
     case 4:
       cellColor = color(0, 255, 0);
       break;
-   }
+    }
   }
 
   void draw(float zoom, float bx, float by)
- {
+  {
     fill(cellColor);
+    if (cellSize*zoom < 8) noStroke();
+    else stroke(0);
     rect(x*cellSize*zoom + bx, y*cellSize*zoom + by, cellSize*zoom, cellSize*zoom);
+    stroke(0);
   }
 }

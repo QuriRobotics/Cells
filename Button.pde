@@ -14,7 +14,7 @@ class Button
     pressed = press;
     released = release;
   }
-  Button(int sx, int sy, int sxs, int sys, color release, color press,   PFont fonts, String texts, int textSizes)
+  Button(int sx, int sy, int sxs, int sys, color release, color press, PFont fonts, String texts, int textSizes)
   {
     x = sx;
     y = sy;
