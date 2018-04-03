@@ -77,7 +77,8 @@ void simulate()
     {
       world[cell[i].x][cell[i].y][1] = 0;
       int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
-      if(world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy][1] == 0)
+      if(world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy][0] == 0 &&
+          world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy][1] == 0)
       {
         cell[i].x += dx;
         cell[i].x %= sx;

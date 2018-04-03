@@ -1,7 +1,8 @@
 class Cell
 {
   int x, y, type, cellSize; // 1-яд, 2-стена, 3-клетка, 4-еда, 5-пусто
-  int[] genome = new int[64];
+  int pointer = 0;
+  int[] genome = new int[64]; // 0...7 - сделать шаг, 8...15 - схватить еду или нейтрализовать яд, 16...23 - посмотреть, 24...31 - поворот, 32...63 - безусловный переход
   color cellColor;
   Cell(int xs, int ys, int types, int cellSizes)
   {
