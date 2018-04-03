@@ -1,6 +1,6 @@
 Cell[] cell;
 Button reset, zoomIn, zoomReset, zoomOut, oneStep, pause, play;
-int[][][] world; // 0 - future, 1 - present
+int[][] world; // 0 - future, 1 - present
 int cellSize = 20;
 int sx, sy;
 int buttLeft, buttRight;
@@ -10,6 +10,7 @@ int cellAmount;
 float zoom = 1;
 boolean locked = false, simOnline = true;
 float biasX, biasY, difX = 0.0, difY = 0.0;
+int ind = 0;
 
 void setup()
 {
@@ -18,27 +19,32 @@ void setup()
   frameRate(30);
   sx = int(width*0.92/cellSize);
   sy = height/cellSize;
-  world = new int[sx][sy][2];
+  world = new int[sx][sy];
   buttLeft = sx * cellSize + 10;
   buttRight = width - sx * cellSize - 20;
   canvasSizeX = sx * cellSize;
   canvasSizeY = sy * cellSize;
   cellAmount = sx * sy * density / 100;
   cell = new Cell[cellAmount];
-  world = new int[sx][sy][2];
-  for(int i = 0; i<sy; i++)
+  world = new int[sx][sy];
+  for (int i = 0; i<sy; i++)
   {
-    for(int j = 0; j<sx; j++)
+    for (int j = 0; j<sx; j++)
     {
-      world[j][i][0] = 0;
-      world[j][i][1] = 0;
+      world[j][i] = 0;
     }
   }
   for (int i = 0; i < cellAmount; i++)
   {
-    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1,5)), cellSize);
-    world[cell[i].x][cell[i].y][0] = cell[i].type;
-    world[cell[i].x][cell[i].y][1] = cell[i].type;
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1, 5)), cellSize);
+    world[cell[i].x][cell[i].y] = cell[i].type;
+    if(cell[i].type == 3)
+    {
+      for(int j = 0; j<64; j++)
+      {
+        cell[i].genome[j] = int(random(64));
+      }
+    }
   }
   reset = new Button(buttLeft, 10, buttRight, 40, color(0, 0, 0), color(55));
   zoomIn = new Button(buttLeft, reset.y + reset.ys + 10, buttRight, 100, color(255, 0, 0), color(200, 0, 0));
@@ -50,10 +56,13 @@ void setup()
 }
 void draw()
 {
+  //cell[ind].alive = false;
+  //ind++;
+  //ind %= cellAmount;
   background(255);
   fill(110, 230, 135);
   rect(biasX*zoom, biasY*zoom, sx*cellSize*zoom, sy*cellSize*zoom);
-  if(simOnline)
+  if (simOnline)
   {
     simulate();
   }
@@ -71,68 +80,78 @@ void draw()
 
 void simulate()
 {
-  for(int i = 0; i < cellAmount; i++)
+  for (int i = 0; i < cellAmount; i++)
   {
-    if(cell[i].type == 3)
+    if (world[cell[i].x][cell[i].y] == -1) cell[i].alive = false;
+    if (!cell[i].alive) continue;
+    if (cell[i].type == 3)
     {
-      world[cell[i].x][cell[i].y][1] = 0;
+      world[cell[i].x][cell[i].y] = 0;
       int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
-      if(world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy][0] == 0 &&
-          world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy][1] == 0)
+      if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 0)
       {
         cell[i].x += dx;
         cell[i].x %= sx;
         cell[i].y += dy;
         cell[i].y %= sy;
       }
-      world[cell[i].x][cell[i].y][0] = cell[i].type;
+      else if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 1) cell[i].alive = false;
+      world[cell[i].x][cell[i].y] = cell[i].type;
     }
   }
 }
 
 void display()
 {
-  for(int i = 0; i < cellAmount; i++)
+  for (int i = 0; i < cellAmount; i++)
   {
     cell[i].draw(zoom, biasX * zoom, biasY * zoom);
-    world[cell[i].x][cell[i].y][1] = cell[i].type;
-    world[cell[i].x][cell[i].y][0] = 0;
+    world[cell[i].x][cell[i].y] = cell[i].type;
   }
 }
 
 
 void mouseReleased()
 {
-  if(reset.overButt())
+  if (reset.overButt())
+  {
+    for (int i = 0; i<sy; i++)
+    {
+      for (int j = 0; j<sx; j++)
+      {
+        world[j][i] = 0;
+      }
+    }
     for (int i = 0; i < cellAmount; i++)
     {
-      cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1,5)), cellSize);
+      cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1, 5)), cellSize);
     }
-  if(zoomIn.overButt())
+  }
+  if (zoomIn.overButt())
   {
     zoom *= 1.1;
   }
-  if(zoomOut.overButt() && zoom*cellSize >= 1)
+  if (zoomOut.overButt() && zoom*cellSize >= 1)
   {
     zoom /= 1.1;
   }
-  if(zoomReset.overButt())
+  if (zoomReset.overButt())
   {
     zoom = 1;
     biasX = 0;
     biasY = 0;
   }
-  if(oneStep.overButt())
+  if (oneStep.overButt())
   {
     simOnline = false;
     simulate();
     display();
   }
-  if(pause.overButt())
+  if (pause.overButt())
   {
     simOnline = false;
   }
-  if(play.overButt())
+  if (play.overButt())
   {
     simOnline = true;
   }
@@ -143,7 +162,7 @@ void mouseReleased()
 
 void mouseDragged()
 {
-  if(locked)
+  if (locked)
   {
     biasX = mouseX-difX;
     biasY = mouseY-difY;
@@ -151,8 +170,8 @@ void mouseDragged()
 }
 void mousePressed()
 {
-  if(mouseX > 0 && mouseX < canvasSizeX &&
-        mouseY > 0 && mouseY < canvasSizeY) locked = true;
+  if (mouseX > 0 && mouseX < canvasSizeX &&
+    mouseY > 0 && mouseY < canvasSizeY) locked = true;
   difX = mouseX - biasX; 
   difY = mouseY - biasY;
 }
