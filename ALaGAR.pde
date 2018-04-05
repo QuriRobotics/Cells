@@ -42,7 +42,7 @@ void setup()
     {
       for(int j = 0; j<64; j++)
       {
-        cell[i].genome[j] = int(random(64));
+        cell[i].genome[j] = 2;//int(random(8));
       }
     }
   }
@@ -58,7 +58,7 @@ void draw()
 {
   //cell[ind].alive = false;
   //ind++;
-  //ind %= cellAmount;
+  //ind %= 8;
   background(255);
   fill(110, 230, 135);
   rect(biasX*zoom, biasY*zoom, sx*cellSize*zoom, sy*cellSize*zoom);
@@ -67,6 +67,50 @@ void draw()
     simulate();
   }
   display();
+}
+
+void simulate()
+{
+  for (int i = 0; i < cellAmount; i++)
+  {
+    if (world[cell[i].x][cell[i].y] == -1) {cell[i].alive = false; world[cell[i].x][cell[i].y] = 0;}
+    if (!cell[i].alive) continue;
+    if (cell[i].type == 3)
+    {
+      world[cell[i].x][cell[i].y] = 0;
+      //int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
+      ind = cell[i].genome[cell[i].index];
+      int dx = round(cos(ind * QUARTER_PI)) + sx, dy = round(sin(ind * QUARTER_PI)) + sy;
+      cell[i].index = (cell[i].index + 1 + world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy]) % 64;
+      if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 0)
+      {
+        cell[i].x += dx;
+        cell[i].x %= sx;
+        cell[i].y += dy;
+        cell[i].y %= sy;
+      }
+      else if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 1) {cell[i].alive = false; world[cell[i].x][cell[i].y] = 0;}
+      if(cell[i].alive) world[cell[i].x][cell[i].y] = cell[i].type;
+      //else world[cell[i].x][cell[i].y] = 0;
+    }
+  }
+  for (int i = 0; i<sy; i++)
+  {
+    for (int j = 0; j<sx; j++)
+    {
+      if(world[j][i] == -1) world[j][i] = 0;
+    }
+  }
+}
+
+void display()
+{
+  for (int i = 0; i < cellAmount; i++)
+  {
+    if(!cell[i].alive) continue;
+    cell[i].draw(zoom, biasX * zoom, biasY * zoom);
+    if(cell[i].alive) world[cell[i].x][cell[i].y] = cell[i].type;
+  }
   fill(255);
   rect(canvasSizeX, 0, width - canvasSizeX, height);
   reset.draw();
@@ -76,38 +120,6 @@ void draw()
   oneStep.draw();
   pause.draw();
   play.draw();
-}
-
-void simulate()
-{
-  for (int i = 0; i < cellAmount; i++)
-  {
-    if (world[cell[i].x][cell[i].y] == -1) cell[i].alive = false;
-    if (!cell[i].alive) continue;
-    if (cell[i].type == 3)
-    {
-      world[cell[i].x][cell[i].y] = 0;
-      int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
-      if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 0)
-      {
-        cell[i].x += dx;
-        cell[i].x %= sx;
-        cell[i].y += dy;
-        cell[i].y %= sy;
-      }
-      else if (world[(cell[i].x+dx)%sx][(cell[i].y+dy)%sy] == 1) cell[i].alive = false;
-      world[cell[i].x][cell[i].y] = cell[i].type;
-    }
-  }
-}
-
-void display()
-{
-  for (int i = 0; i < cellAmount; i++)
-  {
-    cell[i].draw(zoom, biasX * zoom, biasY * zoom);
-    world[cell[i].x][cell[i].y] = cell[i].type;
-  }
 }
 
 
