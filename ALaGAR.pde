@@ -5,19 +5,21 @@ int cellSize = 20;
 int sx, sy;
 int buttLeft, buttRight;
 int canvasSizeX, canvasSizeY;
-int density = 20; // %
+int density = 40; // %
 int cellAmount, lCellAm;
 float zoom = 1;
 boolean locked = false, simOnline = true;
 float biasX, biasY, difX = 0.0, difY = 0.0;
 int comm = 0;
 int alive = 0;
+int[][] bestGenome;
+int[] bestCells;
 
 void setup()
 {
   size(1200, 720, JAVA2D);
   background(255);
-  frameRate(30);
+  frameRate(120);
   sx = int(width*0.92/cellSize);
   sy = height/cellSize;
   world = new int[sx][sy];
@@ -27,6 +29,8 @@ void setup()
   canvasSizeY = sy * cellSize;
   cellAmount = sx * sy * density / 100;
   cell = new Cell[cellAmount];
+  bestGenome = new int[8][64];
+  bestCells = new int[8];
   world = new int[sx][sy];
   for (int i = 0; i<sy; i++)
   {
@@ -37,15 +41,22 @@ void setup()
   }
   for (int i = 0; i < cellAmount; i++)
   {
-    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1, 5)), cellSize);
+    int rand = int(random(1, 4));
+    rand = rand > 2 ? rand + 1 : rand;
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), rand, cellSize);
     world[cell[i].x][cell[i].y] = cell[i].type;
-    if (cell[i].type == 3)
-    {
-      for (int j = 0; j<64; j++)
-      {
-        cell[i].genome[j] = int(random(64));
-      }
-    }
+    /*if (cell[i].type == 3)
+     {
+     for (int j = 0; j<64; j++)
+     {
+     cell[i].genome[j] = int(random(64));
+     }
+     }*/
+  }
+  for (int i = 0; i < 64; i++)
+  {
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), 3, cellSize);
+    world[cell[i].x][cell[i].y] = cell[i].type;
   }
   reset = new Button(buttLeft, 10, buttRight, 40, color(0, 0, 0), color(55));
   zoomIn = new Button(buttLeft, reset.y + reset.ys + 10, buttRight, 100, color(255, 0, 0), color(200, 0, 0));
@@ -68,7 +79,23 @@ void draw()
     simulate();
   }
   display();
-  if(alive == 0) worldReset();
+  if (alive == 0)
+  {
+    for (int k = 0; k < 64; k++)
+      for (int i = 0; i < 64; i++)
+      {
+        if (cell[i].liveTime < bestCells[0]) continue;
+        for (int j = 0; j < 7; j++)
+        {
+          bestCells[j+1] = bestCells[j];
+          bestGenome[j+1] = bestGenome[j];
+        }
+        bestCells[0] = i;
+        bestGenome[0] = cell[i].genome;
+      }
+    
+    worldContinue();
+  }
   alive = 0;
 }
 
@@ -76,72 +103,72 @@ void simulate()
 {
   for (int i = 0; i < cellAmount; i++)
   {
-    for(int iter = 0; iter<10; iter++)
+    for (int iter = 0; iter<10; iter++)
     {
-    
-    //if (world[cell[i].x][cell[i].y] == -1) {cell[i].alive = false; world[cell[i].x][cell[i].y] = 0;}
 
-    if (cell[i].type == 5) continue;
-    cell[i].type = world[cell[i].x][cell[i].y];
-    if (cell[i].type != 3) continue;
-    
-    alive++;
+      //if (world[cell[i].x][cell[i].y] == -1) {cell[i].alive = false; world[cell[i].x][cell[i].y] = 0;}
 
-    world[cell[i].x][cell[i].y] = 5;
-    //int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
-    comm = cell[i].genome[cell[i].index];
-    
-    int dx = round(cos((comm + cell[i].dir) % 8 * QUARTER_PI)), dy = round(sin((comm + cell[i].dir) % 8 * QUARTER_PI));
-    int nx = (cell[i].x+dx+sx)%sx, ny = (cell[i].y+dy+sy)%sy;
+      if (cell[i].type == 5) continue;
+      cell[i].type = world[cell[i].x][cell[i].y];
+      if (cell[i].type != 3) continue;
 
-    if (comm < 8)
-    {
-      if (world[nx][ny] == 5)
-      {
-        cell[i].x = nx;
-        cell[i].y = ny;
-      } else if (world[nx][ny] == 1) {
-        world[cell[i].x][cell[i].y] = 1;
-        cell[i].type = 1;
-      }
-      cell[i].index += world[nx][ny];
-      cell[i].index %= 64;
-      //cell[i].hp -= 1;
-      iter = 10;
-    } else if (comm < 16)
-    {
-      if (world[nx][ny] == 4)
-      {
-        cell[i].hp += 11;
-        cell[i].hp = constrain(cell[i].hp, 0, 100);
-        world[nx][ny] = 5;
-      } else if (world[nx][ny] == 1)
-      {
-        world[nx][ny] = 4;
-        //cell[i].hp -= 1;
-      }
-      cell[i].index += world[nx][ny];
-      cell[i].index %= 64;
-      iter = 10;
-    } else if(comm < 24)
-    {
-      cell[i].index += world[nx][ny];
-      cell[i].index %= 64;
+      alive++;
+
       world[cell[i].x][cell[i].y] = 5;
-    } else if(comm < 32)
-    {
-      cell[i].dir += comm % 8;
-      cell[i].dir %= 8;
-    }
-    else
-    {
-      cell[i].index += comm;
-      cell[i].index %= 64;
-    }
-    if(cell[i].hp <= 0) cell[i].type = 5;
-    world[cell[i].x][cell[i].y] = cell[i].type;
+      //int dx = int(random(-1, 2) + sx), dy = int(random(-1, 2) + sy);
+      comm = cell[i].genome[cell[i].index];
+
+      int dx = round(cos((comm + cell[i].dir) % 8 * QUARTER_PI)), dy = round(sin((comm + cell[i].dir) % 8 * QUARTER_PI));
+      int nx = (cell[i].x+dx+sx)%sx, ny = (cell[i].y+dy+sy)%sy;
+
+      if (comm < 8)
+      {
+        if (world[nx][ny] == 5)
+        {
+          cell[i].x = nx;
+          cell[i].y = ny;
+        } else if (world[nx][ny] == 1) {
+          world[cell[i].x][cell[i].y] = 1;
+          cell[i].type = 1;
+        }
+        cell[i].index += world[nx][ny];
+        cell[i].index %= 64;
+        //cell[i].hp -= 1;
+        iter = 10;
+      } else if (comm < 16)
+      {
+        if (world[nx][ny] == 4)
+        {
+          cell[i].hp += 11;
+          cell[i].hp = constrain(cell[i].hp, 0, 100);
+          world[nx][ny] = 5;
+        } else if (world[nx][ny] == 1)
+        {
+          world[nx][ny] = 4;
+          //cell[i].hp -= 1;
+        }
+        cell[i].index += world[nx][ny];
+        cell[i].index %= 64;
+        iter = 10;
+      } else if (comm < 24)
+      {
+        cell[i].index += world[nx][ny];
+        cell[i].index %= 64;
+        world[cell[i].x][cell[i].y] = 5;
+      } else if (comm < 32)
+      {
+        cell[i].dir += comm % 8;
+        cell[i].dir %= 8;
+      } else
+      {
+        cell[i].index += comm;
+        cell[i].index %= 64;
+      }
+      if (cell[i].hp <= 0) cell[i].type = 5;
+      world[cell[i].x][cell[i].y] = cell[i].type;
     }
     cell[i].hp -= 1;
+    cell[i].liveTime += 1;
   }
 }
 
@@ -174,15 +201,68 @@ void worldReset()
   }
   for (int i = 0; i < cellAmount; i++)
   {
-    cell[i] = new Cell(int(random(sx)), int(random(sy)), int(random(1, 5)), cellSize);
+    int rand = int(random(1, 4));
+    rand = rand > 2 ? rand + 1 : rand;
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), rand, cellSize);
     world[cell[i].x][cell[i].y] = cell[i].type;
-    if (cell[i].type == 3)
+    /*if (cell[i].type == 3)
+     {
+     for (int j = 0; j<64; j++)
+     {
+     cell[i].genome[j] = int(random(64));
+     }
+     }*/
+  }
+  for (int i = 0; i < 64; i++)
+  {
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), 3, cellSize);
+    world[cell[i].x][cell[i].y] = cell[i].type;
+    for (int j = 0; j<64; j++)
     {
-      for (int j = 0; j<64; j++)
-      {
-        cell[i].genome[j] = int(random(64));
-      }
+      cell[i].genome[j] = int(random(64));
     }
+  }
+}
+
+void worldContinue()
+{
+  for (int i = 0; i<sy; i++)
+  {
+    for (int j = 0; j<sx; j++)
+    {
+      world[j][i] = 5;
+    }
+  }
+  for (int i = 0; i < cellAmount; i++)
+  {
+    int rand = int(random(1, 4));
+    rand = rand > 2 ? rand + 1 : rand;
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), rand, cellSize);
+    world[cell[i].x][cell[i].y] = cell[i].type;
+    /*if (cell[i].type == 3)
+     {
+     for (int j = 0; j<64; j++)
+     {
+     cell[i].genome[j] = int(random(64));
+     }
+     }*/
+  }
+  for (int i = 0; i < 64; i++)
+  {
+    cell[i] = new Cell(int(random(sx)), int(random(sy)), 3, cellSize);
+    world[cell[i].x][cell[i].y] = cell[i].type;
+    cell[i].genome = bestGenome[i%8];
+  }
+  for(int i = 0; i < 48; i++)
+  {
+    cell[i].genome[int(random(64))] = int(random(64));
+  }
+  for(int i = 56; i < 64; i++)
+  {
+     for (int j = 0; j<64; j++)
+     {
+       cell[i].genome[j] = int(random(64));
+     }
   }
 }
 
